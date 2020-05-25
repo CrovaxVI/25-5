@@ -25,6 +25,51 @@ export class AppComponent implements OnInit {
   constructor(public http: HttpClient) {
 
   }
+circleLat : number = 0; //Latitudine e longitudine iniziale del cerchio
+  circleLng: number = 0;
+  maxRadius: number = 400; //Voglio evitare raggi troppo grossi
+  radius : number = this.maxRadius; //Memorizzo il raggio del cerchio
+
+ mapClicked($event: MouseEvent) {
+    this.circleLat = $event.coords.lat; //Queste sono le coordinate cliccate
+    this.circleLng = $event.coords.lng; //Sposto il centro del cerchio qui
+    this.lat = this.circleLat; //Sposto il centro della mappa qui
+    this.lng = this.circleLng;
+    this.zoom = 15;  //Zoom sul cerchio
+  }
+circleRedim(newRadius : number){
+    console.log(newRadius) //posso leggere sulla console il nuovo raggio
+    this.radius = newRadius;  //Ogni volta che modifico il cerchio, ne salvo il raggio
+  }
+
+circleDoubleClicked(circleCenter)
+  {
+    console.log(circleCenter); //Voglio ottenere solo i valori entro questo cerchio
+    console.log(this.radius);
+
+    this.circleLat = circleCenter.coords.lat; //Aggiorno le coordinate del cerchio
+    this.circleLng = circleCenter.coords.lng; //Aggiorno le coordinate del cerchio
+
+    //Non conosco ancora le prestazioni del DB, non voglio fare ricerche troppo onerose
+    if(this.radius > this.maxRadius)
+    {
+      console.log("area selezionata troppo vasta sarà reimpostata a maxRadius");
+       this.radius = this.maxRadius;
+    }
+    let raggioInGradi = (this.radius * 0.00001)/1.1132;
+//Posso riusare lo stesso observable e lo stesso metodo di gestione del metodo
+//cambiaFoglio poichè riceverò lo stesso tipo di dati
+//Divido l'url andando a capo per questioni di leggibilità non perchè sia necessario
+    this.obsCiVett = this.http.get<Ci_vettore[]>(`http://TUO_URL/ci_geovettore/
+    ${this.circleLat}/
+    ${this.circleLng}/
+    ${raggioInGradi}`);
+    this.obsCiVett.subscribe(this.prepareCiVettData);
+    console.log ("raggio in gradi " + (this.radius * 0.00001)/1.1132)
+
+    //Voglio spedire al server una richiesta che mi ritorni tutte le abitazioni all'interno del cerchio
+  }
+
 
   prepareData = (data: GeoFeatureCollection) => {
     this.geoJsonObject = data
@@ -40,7 +85,15 @@ export class AppComponent implements OnInit {
       this.markers.push(marker);
     }*/
   }
-
+let raggioInGradi = (this.radius * 0.00001)/1.1132;
+//Posso riusare lo stesso observable e lo stesso metodo di gestione del metodo
+//cambiaFoglio poichè riceverò lo stesso tipo di dati
+//Divido l'url andando a capo per questioni di leggibilità non perchè sia necessario
+    this.obsCiVett = this.http.get<Ci_vettore[]>(`http://TUO_URL/ci_geovettore/
+    ${this.circleLat}/
+    ${this.circleLng}/
+    ${raggioInGradi}`);
+    this.obsCiVett.subscribe(this.prepareCiVettData)
   prepareCiVettData = (data: Ci_vettore[]) =>
   {
     console.log(data);
@@ -74,6 +127,7 @@ export class AppComponent implements OnInit {
       strokeWeight: 1
     });
   }
+
 
 }
 

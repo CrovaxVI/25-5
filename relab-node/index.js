@@ -8,6 +8,11 @@ const sqlUtils = require('./SqlUtils.js');
 
 app.use(new cors());
 
+app.get('/ci_geovettore/:lng/:lat/:r', function (req, res) {
+    console.log(req.params);
+    //richiamo il metodo che ottiene l'elenco dei vettori energetici
+    sqlUtils.connect(req, res, sqlUtils.ciVettGeoRequest);
+ });
 
 app.get('/', function (req, res) {
    //Per connettermi al DB uso il metodo statico sqlUtils.connect
