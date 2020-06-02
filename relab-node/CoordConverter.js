@@ -34,5 +34,20 @@ module.exports = class CoordConverter {
         }
         return geometry;
     }
+generateGeoJson(recordset) {
+        let geoJsonHeader = new FeatureCollection();
 
+        let i = 0;
+        for (const record of recordset) {  
+            let media = record["media"];
+            let somma = record["somma"];
+            let polygonGeometry = parse(record["WKT"]); //parso da wkt a geojson geometry
+            //let geom = this._convertPolygon(polygonGeometry); // converto in "EPSG:4362" 
+            let geom = (polygonGeometry); // non converto più in "EPSG:4362" 
+            // e metto la geometry  geojson
+            geoJsonHeader.features.push(new Feature(i,geom, media, somma));
+            i++;
+        }
+        return geoJsonHeader;
+    }
 }

@@ -46,29 +46,41 @@ circleDoubleClicked(circleCenter)
   {
     console.log(circleCenter); //Voglio ottenere solo i valori entro questo cerchio
     console.log(this.radius);
-
-    this.circleLat = circleCenter.coords.lat; //Aggiorno le coordinate del cerchio
-    this.circleLng = circleCenter.coords.lng; //Aggiorno le coordinate del cerchio
-
-    //Non conosco ancora le prestazioni del DB, non voglio fare ricerche troppo onerose
+    this.circleLat = circleCenter.coords.lat;
+    this.circleLng = circleCenter.coords.lng;
     if(this.radius > this.maxRadius)
     {
       console.log("area selezionata troppo vasta sarà reimpostata a maxRadius");
-       this.radius = this.maxRadius;
+      this.radius = this.maxRadius;
     }
+
     let raggioInGradi = (this.radius * 0.00001)/1.1132;
-//Posso riusare lo stesso observable e lo stesso metodo di gestione del metodo
-//cambiaFoglio poichè riceverò lo stesso tipo di dati
-//Divido l'url andando a capo per questioni di leggibilità non perchè sia necessario
-    this.obsCiVett = this.http.get<Ci_vettore[]>(`http://TUO_URL/ci_geovettore/
+
+  const urlciVett = `${this.serverUrl}/ci_geovettore/
     ${this.circleLat}/
     ${this.circleLng}/
-    ${raggioInGradi}`);
+    ${raggioInGradi}`;
+
+    const urlGeoGeom = `${this.serverUrl}/geogeom/
+    ${this.circleLat}/
+    ${this.circleLng}/
+    ${raggioInGradi}`;
+    //Posso riusare lo stesso observable e lo stesso metodo di gestione del metodo cambiaFoglio
+    //poichè riceverò lo stesso tipo di dati
+    //Divido l'url andando a capo per questioni di leggibilità non perchè sia necessario
+    this.obsCiVett = this.http.get<Ci_vettore[]>(urlciVett);
     this.obsCiVett.subscribe(this.prepareCiVettData);
-    console.log ("raggio in gradi " + (this.radius * 0.00001)/1.1132)
+
+    this.obsGeoData = this.http.get<GeoFeatureCollection>(urlGeoGeom);
+    this.obsGeoData.subscribe(this.prepareData);
+
+    //console.log ("raggio in gradi " + (this.radius * 0.00001)/1.1132)
 
     //Voglio spedire al server una richiesta che mi ritorni tutte le abitazioni all'interno del cerchio
+
   }
+
+serverUrl : string = "http://TUO_URL";
 
 
   prepareData = (data: GeoFeatureCollection) => {
@@ -107,12 +119,9 @@ let raggioInGradi = (this.radius * 0.00001)/1.1132;
   }
 
   ngOnInit() {
-    this.obsGeoData = this.http.get<GeoFeatureCollection>("https://3000-ecffcf4b-67ec-497e-b367-d1da5f119cff.ws-eu01.gitpod.io");
-    this.obsGeoData.subscribe(this.prepareData);
+    //this.obsGeoData = this.http.get<GeoFeatureCollection>("https://3000-ecffcf4b-67ec-497e-b367-d1da5f119cff.ws-eu01.gitpod.io");
+    //this.obsGeoData.subscribe(this.prepareData);
 
-    this.obsCiVett = this.http.get<Ci_vettore[]>("https://3000-ecffcf4b-67ec-497e-b367-d1da5f119cff.ws-eu01.gitpod.io/ci_vettore/90");
-    this.obsCiVett.subscribe(this.prepareCiVettData);
-    //Uso di un ciclo foreach per riempire i marker
   }
 
   styleFunc = (feature) => {
